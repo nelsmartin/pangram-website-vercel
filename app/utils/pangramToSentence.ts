@@ -18,6 +18,8 @@ const NUMBER_WORDS: { [key: number]: string } = {
   13: "thirteen",
   14: "fourteen",
   15: "fifteen",
+  16: "sixteen",
+  17: "seventeen",
   18: "eighteen",
   19: "nineteen",
   20: "twenty",
@@ -39,11 +41,11 @@ const NUMBER_WORDS: { [key: number]: string } = {
   36: "thirty-six",
 };
 
-export function pangramToSentence(prefix : String, charCounts: number[]) {
+export function pangramToSentence(prefix : String, usingAnd: String, charCounts: number[]) {
 
     let result = prefix + " "
 
-    for (let i = 0; i < charCounts.length; i++) {
+    for (let i = 0; i < charCounts.length - 1; i++) {
 
         result += NUMBER_WORDS[charCounts[i]] + " "
         result += String.fromCharCode(65 + i)
@@ -53,7 +55,11 @@ export function pangramToSentence(prefix : String, charCounts: number[]) {
         result += ", "
 
     }
-
+    result += usingAnd + " " + NUMBER_WORDS[charCounts[charCounts.length - 1]] + " Z"
+    if (charCounts[charCounts.length - 1] > 1) {
+        result += "s"
+    }
+    result += "."
     return result
 
 }
