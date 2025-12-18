@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
 
 export default async function AutogramList() {
   const autograms = await prisma.autogram.findMany({
@@ -9,7 +10,7 @@ export default async function AutogramList() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-semibold">Previously Found Pangrams</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Previously Found Autograms</h1>
 
       <ul className="space-y-4">
         {autograms.map((autogram) => (
