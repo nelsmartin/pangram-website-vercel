@@ -1,9 +1,7 @@
 'use client';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { pangramToSentence } from '@/app/utils/pangramToSentence';
-import Form from "next/form";
-import prisma from "@/lib/prisma";
-
+import Stopwatch from "@/app/stopwatch";
 
 export default function Page() {
 
@@ -11,49 +9,73 @@ export default function Page() {
   const [result, setResult] = useState("");
   const [usingAnd , setUsingAnd] = useState("and")
   const [loading, setLoading] = useState(false)
+  const [time, setTime] = useState(0);
+  
+  const [isSaving, setIsSaving] = useState(false);
+  const [name, setName] = useState("");
+  
+  function formatTime(time: number) {
+    const seconds = String(Math.floor(time / 100))
+    const milliseconds = String(time % 100).padStart(2, "0")
+    return seconds + "." + milliseconds
+  
+}
+  useEffect(() => {
+  if (!loading) return;
+  setTime(0); 
+  const intervalId = setInterval(() => {
+    setTime(t => t + 1);
+  }, 10);
+
+  return () => clearInterval(intervalId);
+  }, [loading]);
 
   const runSolver = async () => {
     setLoading(true)
     const inputString = prefix + " " + usingAnd
     const res = await fetch(`/api/solve?prefix=${encodeURIComponent(inputString)}`);
     const json = await res.json();
+
     if (json.data.message === "No solution found"){
       setResult("No solution found")
     } else {
       const newResult = pangramToSentence(prefix, usingAnd, json.data.message)
       setResult(newResult)
-      await fetch("/api/autograms", {
+    }
+    console.log(pangramToSentence(prefix, usingAnd, json.data.message))
+    setLoading(false)
+  };
+
+  const resetSolver = () => {
+    setResult("")
+  }
+  
+  const saveAutogram = async () =>  {
+    const timeString = formatTime(time)
+    const zConnector = usingAnd ? "and" : "&"
+    await fetch("/api/autograms", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content: newResult,
+          content: result,
+          time: timeString,
+          name: name,
+          prefix: prefix,
+          zConnector: zConnector,
         }),
       });
-    }
-    console.log(pangramToSentence(prefix, usingAnd, json.data.message))
-    
-
-
-
-    setLoading(false)
-  };
-
-
-  
-
+  }
   return (
     <div className ="flex flex-col justify-center space-y-2 items-center h-screen w-full bg-gray-100">
-      
-
       <div className="flex w-full justify-center space-x-2">
         <input
           type="text"
           value={prefix}
           onChange={(e) => setPrefix(e.target.value)}
           placeholder="Type prefix here"
-          className="flex w-100 p-2 border border-gray-300 rounded" 
+          className="flex w-80 p-2 border border-gray-300 rounded" 
         />
       <select
         className="flex p-2 border border-gray-300 rounded" 
@@ -63,21 +85,29 @@ export default function Page() {
         <option value="and">and</option>
         <option value="&">&</option>
       </select>
-
     </div>
+    
+    {(result && !loading && result !== "No solution found") && (
+      <p className="font-bold">
+        Solution found in {formatTime(time)} seconds!
+      </p>
+    )}
+
+    {(loading) && (
+      <p>
+        {formatTime(time)}s
+      </p>
+    )}
+    
   
-  
-
-
-
-      {(result && !loading) && (
-        <div className="flex w-1/2 mx-auto justify-center">
-          <p>
-            {result}
-          </p>
-        </div> 
-          
-        )}
+    {(result && !loading) && (
+      <div className="flex w-1/2 mx-auto justify-center pb-2">
+        <p>
+          {result}
+        </p>
+      </div> 
+        
+      )}
       {loading && (
         <div role="status">
           <svg aria-hidden="true" className="w-8 h-8 text-gray-200 animate-spin fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -87,8 +117,55 @@ export default function Page() {
           <span className="sr-only">Loading...</span>
         </div>
       )}
+      
+      {(!loading && !result) && (
+        <button onClick={runSolver} className="bg-blue-500 text-white p-2 rounded">Search for Autogram</button>
+      )}
+      <div className="space-x-2">
+        {(result && !loading && result !== "No solution found") && (
+          <button onClick={() => setIsSaving(true)} className="bg-blue-500 text-white p-2 rounded">Save Autogram</button>
+        )}
+        {(!loading && result) && (
+          <button onClick={resetSolver} className="bg-blue-500 text-white p-2 rounded">Try Again</button>
+        )}
+      </div>
 
-      <button onClick={runSolver} className="bg-blue-500 text-white p-2 rounded">Search for Pangram</button>
+      {isSaving && (
+      <div className="flex flex-col items-center space-y-2">
+        <input
+          type="text"
+          placeholder="Your name (optional)"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="w-64 p-2 border rounded"
+        />
+
+        <div className="flex space-x-2">
+          <button
+            onClick={() => {
+              saveAutogram()
+              setIsSaving(false);
+              alert("Autogram saved! View it on the \"See Autograms\" page.")
+            }
+            }
+            className="bg-green-600 text-white p-2 rounded"
+          >
+            Confirm Save
+          </button>
+
+          <button
+            onClick={() => {
+              setIsSaving(false);
+              setName("");
+            }}
+            className="bg-gray-400 text-white p-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
+
     </div>
 
   );

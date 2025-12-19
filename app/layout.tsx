@@ -35,7 +35,7 @@ export default function RootLayout({
             href="/autogramList"
             className="text-lg font-normal text-gray-600 hover:text-black transition"
           >
-            See Pangrams
+            See Autograms
           </Link>
         </div>
       </div>

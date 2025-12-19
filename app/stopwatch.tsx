@@ -7,13 +7,15 @@ const Stopwatch = () => {
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
-    let intervalId;
-    if (isRunning) {
-      // setting time from 0 to 1 every 10 milisecond using javascript setInterval method
-      intervalId = setInterval(() => setTime(time + 1), 10);
-    }
-    return () => clearInterval(intervalId);
-  }, [isRunning, time]);
+  if (!isRunning) return;
+
+  const intervalId = setInterval(() => {
+    setTime(t => t + 1);
+  }, 10);
+
+  return () => clearInterval(intervalId);
+}, [isRunning]);
+
 
   // Hours calculation
   const hours = Math.floor(time / 360000);

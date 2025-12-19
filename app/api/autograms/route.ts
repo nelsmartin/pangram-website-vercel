@@ -1,17 +1,19 @@
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const { content } = body;
+  const { content, time, name, prefix, zConnector } = await req.json();
 
-  if (!content) {
-    return new Response("Missing content", { status: 400 });
+  if (!content || time == null) {
+  return new Response("Missing content or time", { status: 400 });
   }
-
+  console.log(time)
   const autogram = await prisma.autogram.create({
     data: {
       content,
-      authorId: 1, 
+      time: time,
+      name: name,
+      prefix: prefix,
+      zConnector: zConnector
     },
   });
 
