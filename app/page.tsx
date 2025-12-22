@@ -1,8 +1,7 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import { pangramToSentence } from '@/app/utils/pangramToSentence';
-import Stopwatch from "@/app/stopwatch";
-
+import { LettersAnimation } from "./LettersAnimation";
 export default function Page() {
 
   const [prefix, setPrefix] = useState("");
@@ -10,29 +9,84 @@ export default function Page() {
   const [usingAnd , setUsingAnd] = useState("and")
   const [loading, setLoading] = useState(false)
   const [time, setTime] = useState(0);
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [showExample, setShowExample] = useState(true)
+  const [exampleNum, setExampleNum] = useState(1)
+  const [index, setIndex] = useState(0)
+  const [titleLeft, setTitleLeft] = useState("Autogram")
+  const [titleRight, setTitleRight] = useState("Generator")
   
-  const [isSaving, setIsSaving] = useState(false);
-  const [name, setName] = useState("");
-  
+
+  const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", 
+    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
+  function getRandomInt(max : number) {
+    return Math.floor(Math.random() * max);
+  }
+
   function formatTime(time: number) {
     const seconds = String(Math.floor(time / 100))
     const milliseconds = String(time % 100).padStart(2, "0")
     return seconds + "." + milliseconds
-  
-}
-  useEffect(() => {
-  if (!loading) return;
-  setTime(0); 
-  const intervalId = setInterval(() => {
-    setTime(t => t + 1);
-  }, 10);
+  }
 
-  return () => clearInterval(intervalId);
+  useEffect(() => { // Timer
+    if (!loading) return;
+    setTime(0); 
+    const intervalId = setInterval(() => {
+      setTime(t => t + 1);
+    }, 10);
+
+    return () => clearInterval(intervalId);
   }, [loading]);
+
+  useEffect(() => { // Title test
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % letters.length)
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => { // Title Real Left
+    const interval = setInterval(() => {
+      if (!loading) return;
+      setTitleLeft(prevTitle => {
+      const indexToChange = getRandomInt(prevTitle.length)
+      const letterIndex = getRandomInt(letters.length)
+      const newLetter = letters[letterIndex]
+      const upInt = getRandomInt(1)
+      
+      return (
+        prevTitle.slice(0, indexToChange) +
+        newLetter +
+        prevTitle.slice(indexToChange + 1)
+      )
+    })
+  }, 150)
+    return () => clearInterval(interval)
+  }, [loading])
+
+  useEffect(() => { // Title Real Right
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setTitleRight(prevTitle => {
+      const indexToChange = getRandomInt(prevTitle.length)
+      const letterIndex = getRandomInt(letters.length)
+      const newLetter = letters[letterIndex]
+
+      return (
+        prevTitle.slice(0, indexToChange) +
+        newLetter +
+        prevTitle.slice(indexToChange + 1)
+      )
+    })
+  }, 160)
+    return () => clearInterval(interval)
+  }, [loading])
 
   const runSolver = async () => {
     setLoading(true)
-    const inputString = prefix + " " + usingAnd
+    const inputString = prefix + " " + usingAnd;
     const res = await fetch(`/api/solve?prefix=${encodeURIComponent(inputString)}`);
     const json = await res.json();
 
@@ -44,52 +98,108 @@ export default function Page() {
     }
     console.log(pangramToSentence(prefix, usingAnd, json.data.message))
     setLoading(false)
+    setShowExample(false)
+    setTitleLeft("Autogram")
+    setTitleRight("Generator")
   };
 
   const resetSolver = () => {
-    setResult("")
+    setResult("");
+    setShowExample(true)
+  }
+
+  const loadExample = () => {
+    if (exampleNum == 1) {
+      setPrefix("This autogram contains");
+      setUsingAnd("and");
+      setExampleNum(2);
+    } else if (exampleNum == 2) {
+      setPrefix("Hey friend, this sentence has");
+      setUsingAnd("&");
+      setExampleNum(3)
+    } else if (exampleNum == 3) {
+      setPrefix("Mr. Sallows, this pangram contains")
+      setUsingAnd("&");
+      setExampleNum(4)
+    } else if (exampleNum == 4) {
+      setPrefix("Hello 507, this pangram contains")
+      setUsingAnd("and");
+      setExampleNum(1)
+    }
+
+    setShowExample(false);
   }
   
-  const saveAutogram = async () =>  {
-    const timeString = formatTime(time)
-    const zConnector = usingAnd ? "and" : "&"
-    await fetch("/api/autograms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: result,
-          time: timeString,
-          name: name,
-          prefix: prefix,
-          zConnector: zConnector,
-        }),
-      });
-  }
   return (
-    <div className ="flex flex-col justify-center space-y-2 items-center h-screen w-full bg-gray-100">
-      <div className="flex w-full justify-center space-x-2">
+    <div className ="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center w-full min-h-130">
+      <div className="mt-30"></div>
+      <div className="flex flex-row space-x-2">
+        {titleLeft.split('').map((character, index) => (
+          <LettersAnimation key={index} start={character}/>
+        ))}
+        <span className="text-6xl">&nbsp;</span>
+        {titleRight.split('').map((character, index) => (
+          <LettersAnimation key={index} start={character}/>
+        ))}
+      </div>
+
+      <div className="flex justify-center items-center space-x-4 w-fit mt-20">
         <input
           type="text"
           value={prefix}
           onChange={(e) => setPrefix(e.target.value)}
           placeholder="Type prefix here"
-          className="flex w-80 p-2 border border-gray-300 rounded" 
+          className="flex w-90 p-2 border border-gray-300 rounded" 
         />
-      <select
-        className="flex p-2 border border-gray-300 rounded" 
-        value={usingAnd} 
-        onChange={e => setUsingAnd(e.target.value)} 
-      >
-        <option value="and">and</option>
-        <option value="&">&</option>
-      </select>
+      
+        <select
+          className="flex p-2 border border-gray-300 rounded h-full" 
+          value={usingAnd} 
+          onChange={e => setUsingAnd(e.target.value)} 
+        >
+          <option value="and">and</option>
+          <option value="&">&</option>
+        </select>
+        <div className="relative">
+        <button
+          onClick={() => setHelpOpen(!helpOpen)}
+          className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600"
+          aria-label="Help"
+        >
+          ?
+        </button>
+        {helpOpen && (
+            <div className="absolute left-full ml-10 rounded-lg bg-white p-6 w-80 shadow-lg z-50 -translate-y-1/4 space-y-2">
+              <p>
+                <strong>Left box</strong>: the text you type here will appear at the beginning of the autogram, before the letter counts.
+              </p>
+              <p>
+                <strong>Right box</strong>: the option you select here will be used to connect the Z to the end of the autogram. 
+              </p>
+              <p>
+                If you select "and", then the autogram will end with "... <strong>and</strong> one Z". If you select "&", then the autogram will end with
+                "... <strong>&</strong> one Z".
+              </p>
+              <p>
+                Click "Load Example" and then "Search for Autogram" to see a demonstration!
+              </p>
+              <button
+                onClick={() => setHelpOpen(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+                aria-label="Close help"
+              >
+                ✕
+              </button>
+            </div>
+        )}
+        </div>
     </div>
-    
+
+    <div className="mt-5">
     {(result && !loading && result !== "No solution found") && (
       <p className="font-bold">
-        Solution found in {formatTime(time)} seconds!
+        Autogram found in {formatTime(time)} seconds!
       </p>
     )}
 
@@ -98,10 +208,11 @@ export default function Page() {
         {formatTime(time)}s
       </p>
     )}
+    </div>
     
   
     {(result && !loading) && (
-      <div className="flex w-1/2 mx-auto justify-center pb-2">
+      <div className="flex max-w-prose mx-auto justify-center pb-2">
         <p>
           {result}
         </p>
@@ -117,56 +228,49 @@ export default function Page() {
           <span className="sr-only">Loading...</span>
         </div>
       )}
-      
-      {(!loading && !result) && (
-        <button onClick={runSolver} className="bg-blue-500 text-white p-2 rounded">Search for Autogram</button>
-      )}
-      <div className="space-x-2">
-        {(result && !loading && result !== "No solution found") && (
-          <button onClick={() => setIsSaving(true)} className="bg-blue-500 text-white p-2 rounded">Save Autogram</button>
+      <div className="flex flex-row space-x-4 mb-5">
+        {(!loading && !result) && (
+          <button onClick={runSolver} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">
+            Search for Autogram
+          </button>
         )}
         {(!loading && result) && (
-          <button onClick={resetSolver} className="bg-blue-500 text-white p-2 rounded">Try Again</button>
+        <button onClick={resetSolver} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">
+          Try Again
+        </button>
+      )}
+        {(!loading && showExample) && (
+          <button onClick={loadExample} className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">
+            Load Example
+          </button>
         )}
       </div>
-
-      {isSaving && (
-      <div className="flex flex-col items-center space-y-2">
-        <input
-          type="text"
-          placeholder="Your name (optional)"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          className="w-64 p-2 border rounded"
-        />
-
-        <div className="flex space-x-2">
-          <button
-            onClick={() => {
-              saveAutogram()
-              setIsSaving(false);
-              alert("Autogram saved! View it on the \"See Autograms\" page.")
-            }
-            }
-            className="bg-green-600 text-white p-2 rounded"
-          >
-            Confirm Save
-          </button>
-
-          <button
-            onClick={() => {
-              setIsSaving(false);
-              setName("");
-            }}
-            className="bg-gray-400 text-white p-2 rounded"
-          >
-            Cancel
-          </button>
-        </div>
       </div>
-    )}
+      <div className="space-y-4 max-w-prose">
+      <p>
+        An <a target = "_blank" href="https://en.wikipedia.org/wiki/Autogram" className="text-blue-500 underline hover:text-blue-900">autogram</a> is 
+        a sentence that describes itself by providing an inventory of its own characters. 
+        A <a target = "_blank" href="https://en.wikipedia.org/wiki/Pangram" className="text-blue-500 underline hover:text-blue-900">pangram</a> is 
+        a sentence that contains every letter of the alphabet. This website searches for autogramic pangrams (also called self-enumerating pangrams): sentences
+        that have both of these properties!
+      </p>
+      <p>
+        The first autogramic pangram in English was produced by Lee Sallows in 1984:
+      </p>
+        <blockquote className="border-l-4 border-gray-300 pl-4 max-w-prose">
+          This pangram contains four as, one b, two cs, one d, thirty es, six fs, five gs, seven hs, eleven is, one j, 
+          one k, two ls, two ms, eighteen ns, fifteen os, two ps, one q, five rs, twenty-seven ss, eighteen ts, two us, 
+          seven vs, eight ws, two xs, three ys, & one z.        
+        </blockquote>
+      <p>
+        This website is powered 
+        by <a target = "_blank" href="https://docs.racket-lang.org/rosette-guide/index.html" className="text-blue-500 underline hover:text-blue-900">Rosette</a>, a
+        solver-aided programming system built on top of the programming language Racket. 
+      </p>
 
+      </div>
     </div>
+  
 
   );
 }
