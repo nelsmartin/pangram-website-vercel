@@ -1,7 +1,3 @@
-
-
-
-
 const NUMBER_WORDS: { [key: number]: string } = {
   1: "one",
   2: "two",
@@ -41,27 +37,26 @@ const NUMBER_WORDS: { [key: number]: string } = {
   36: "thirty-six",
 };
 
-export function pangramToSentence(prefix : String, usingAnd: String, charCounts: number[]) {
+export function pangramToSentence(
+  prefix: String,
+  usingAnd: String,
+  charCounts: number[],
+) {
+  let result = prefix + " ";
 
-    let result = prefix + " "
-
-    for (let i = 0; i < charCounts.length - 1; i++) {
-
-        result += NUMBER_WORDS[charCounts[i]] + " "
-        result += String.fromCharCode(65 + i)
-        if (charCounts[i] > 1){
-            result += "s"
-        }
-        result += ", "
-
+  for (let i = 0; i < charCounts.length - 1; i++) {
+    result += NUMBER_WORDS[charCounts[i]] + " ";
+    result += String.fromCharCode(65 + i);
+    if (charCounts[i] > 1) {
+      result += "s";
     }
-    result += usingAnd + " " + NUMBER_WORDS[charCounts[charCounts.length - 1]] + " Z"
-    if (charCounts[charCounts.length - 1] > 1) {
-        result += "s"
-    }
-    result += "."
-    return result
-
+    result += ", ";
+  }
+  result +=
+    usingAnd + " " + NUMBER_WORDS[charCounts[charCounts.length - 1]] + " Z";
+  if (charCounts[charCounts.length - 1] > 1) {
+    result += "s";
+  }
+  result += ".";
+  return result;
 }
-
-

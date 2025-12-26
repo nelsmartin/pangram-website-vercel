@@ -13,17 +13,17 @@ export const geistMono = Geist_Mono({
 
 export const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
-  subsets: ["latin"]
-})
+  subsets: ["latin"],
+});
 
 export const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
   subsets: ["latin"],
-  weight: "700"
-})
+  weight: "700",
+});
 
 export const plexSerif = IBM_Plex_Serif({
   variable: "--font-plex-serif",
   subsets: ["latin"],
-  weight: "500"
-})
+  weight: "500",
+});
