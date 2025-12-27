@@ -10,7 +10,6 @@ export function LettersAnimation({ start = " " }: { start: string }) {
     randRef.current = Math.random() < 0.5;
   }, [start]);
 
-  // text-5xl sm:text-7xl
   return (
     <>
       <div className="px-0.5 text-6xl sm:text-8xl text-center  font-bold tracking-tighter w-fit flex justify-center mx-auto gap-1.5">

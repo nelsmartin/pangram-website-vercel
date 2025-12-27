@@ -1,7 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { pangramToSentence } from "@/app/utils/pangramToSentence";
 import { LettersAnimation } from "./LettersAnimation";
+import Footer from "./Footer";
+
 export default function Page() {
   const [prefix, setPrefix] = useState("");
   const [result, setResult] = useState("");
@@ -202,7 +204,8 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen w-full flex flex-col items-center px-6">
+    <main className="min-h-screen w-full flex flex-col items-center">
+      <div className="px-6 flex flex-col items-center">
       <section className="w-full py-30 flex items-center justify-center">
         <div className="flex flex-wrap items-center gap-10 justify-center">
           <div className="flex">
@@ -464,11 +467,10 @@ export default function Page() {
             Because only the above ranges are checked,
             there may be an autogram that exists for a given prefix that is
             not found by this website.
-
           </p>
-          
       </section>
-
+      </div>
+    <Footer/>
     </main>
   );
 }
