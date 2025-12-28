@@ -3,7 +3,6 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 export default function Footer() {
   return (
     <footer className="w-full bg-gray-50 text-gray-700 py-4 flex flex-col items-center space-y-4 border-t border-gray-200 mt-10">
-      
       <p className="text-sm text-gray-500">
         &copy; {new Date().getFullYear()} Nels Martin
       </p>
@@ -57,8 +56,8 @@ export default function Footer() {
         >
           Docker
         </a>
-        ,{" "}and{" "}
-         <a
+        , and{" "}
+        <a
           href="https://docs.racket-lang.org/rosette-guide/index.html"
           target="_blank"
           rel="noopener noreferrer"
